@@ -5,3 +5,5 @@
  */
 
 export * from "./item";
+export * from "./symbol";
+
