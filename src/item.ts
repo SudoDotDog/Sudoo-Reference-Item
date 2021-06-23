@@ -91,32 +91,29 @@ export class ReferenceItem<T extends any = any> {
         return this._item;
     }
 
-    public async refresh(): Promise<void> {
+    public async refresh(): Promise<boolean> {
 
         this.reset();
-        await this.fulfillItem();
-
-        return;
+        return await this.fulfillItem();
     }
 
-    public async fulfillItem(): Promise<void> {
+    public async fulfillItem(): Promise<boolean> {
 
         if (this._fulfilled) {
-            return;
+            return false;
         }
 
-        fulfillers: for (const fulfiller of this._fulfillers) {
+        for (const fulfiller of this._fulfillers) {
 
             const shouldUse: boolean = await fulfiller.shouldFulfillWith();
 
             if (shouldUse) {
 
                 this._item = await fulfiller.execute();
-                break fulfillers;
+                this._fulfilled = true;
+                return true;
             }
         }
-
-        this._fulfilled = true;
-        return;
+        return false;
     }
 }
