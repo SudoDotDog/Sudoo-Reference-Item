@@ -14,7 +14,7 @@ export class ReferenceItem<T extends any = any> {
         return new ReferenceItem<T>();
     }
 
-    private _item?: T | typeof EmptyItemSymbol;
+    private _item: T | typeof EmptyItemSymbol;
 
     private readonly _fulfillers: Array<ReferenceItemFulfiller<T>>;
     private _fulfilled: boolean;

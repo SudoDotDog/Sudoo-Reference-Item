@@ -9,7 +9,7 @@ export type FulfillItemVerifyFunction = () => boolean | Promise<boolean>;
 
 export class ReferenceItemFulfiller<T extends any = any> {
 
-    public static through<T extends any = any>(fulfiller: FulfillItemFulfillFunction<T>): ReferenceItemFulfiller<T> {
+    public static create<T extends any = any>(fulfiller: FulfillItemFulfillFunction<T>): ReferenceItemFulfiller<T> {
 
         return new ReferenceItemFulfiller(fulfiller);
     }
