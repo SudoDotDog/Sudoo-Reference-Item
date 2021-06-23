@@ -4,28 +4,36 @@
  * @description Item
  */
 
+import { ReferenceItemFulfiller } from "./fulfiller";
 import { EmptyItemSymbol } from "./symbol";
 
 export class ReferenceItem<T extends any = any> {
 
-    public static create<T extends any = any>(initial?: T): ReferenceItem<T> {
+    public static create<T extends any = any>(): ReferenceItem<T> {
 
-        return new ReferenceItem<T>(initial);
+        return new ReferenceItem<T>();
     }
 
     private _item?: T | typeof EmptyItemSymbol;
 
-    private constructor(initial?: T) {
+    private readonly _fulfillers: Array<ReferenceItemFulfiller<T>>;
+    private _fulfilled: boolean;
 
-        this._item = initial;
+    private constructor() {
+
+        this._item = EmptyItemSymbol;
+
+        this._fulfillers = [];
+        this._fulfilled = false;
     }
 
-    public addFulfiller(): this {
+    public fulfillWith(fulfiller: ReferenceItemFulfiller<T>): this {
 
+        this._fulfillers.push(fulfiller);
         return this;
     }
 
-    public getItemOrDefault(defaultItem: T): T {
+    public ensureItemOrDefault(defaultItem: T): T {
 
         if (this._item === EmptyItemSymbol) {
             return defaultItem;
@@ -33,7 +41,7 @@ export class ReferenceItem<T extends any = any> {
         return this._item;
     }
 
-    public getItemOrUndefined(): T | undefined {
+    public ensureItemOrUndefined(): T | undefined {
 
         if (this._item === EmptyItemSymbol) {
             return undefined;
@@ -41,11 +49,59 @@ export class ReferenceItem<T extends any = any> {
         return this._item;
     }
 
-    public getItemOrNull(): T | null {
+    public ensureItemOrNull(): T | null {
 
         if (this._item === EmptyItemSymbol) {
             return null;
         }
         return this._item;
+    }
+
+    public async getItemOrDefault(defaultItem: T): Promise<T> {
+
+        await this.fulfillItem();
+        if (this._item === EmptyItemSymbol) {
+            return defaultItem;
+        }
+        return this._item;
+    }
+
+    public async getItemOrUndefined(): Promise<T | undefined> {
+
+        await this.fulfillItem();
+        if (this._item === EmptyItemSymbol) {
+            return undefined;
+        }
+        return this._item;
+    }
+
+    public async getItemOrNull(): Promise<T | null> {
+
+        await this.fulfillItem();
+        if (this._item === EmptyItemSymbol) {
+            return null;
+        }
+        return this._item;
+    }
+
+    public async fulfillItem(): Promise<void> {
+
+        if (this._fulfilled) {
+            return;
+        }
+
+        fulfillers: for (const fulfiller of this._fulfillers) {
+
+            const shouldUse: boolean = await fulfiller.shouldFulfillWith();
+
+            if (shouldUse) {
+
+                this._item = await fulfiller.execute();
+                break fulfillers;
+            }
+        }
+
+        this._fulfilled = true;
+        return;
     }
 }
