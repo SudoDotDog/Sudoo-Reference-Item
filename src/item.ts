@@ -57,6 +57,13 @@ export class ReferenceItem<T extends any = any> {
         return this._item;
     }
 
+    public reset(): this {
+
+        this._fulfilled = false;
+        this._item = EmptyItemSymbol;
+        return this;
+    }
+
     public async getItemOrDefault(defaultItem: T): Promise<T> {
 
         await this.fulfillItem();
@@ -82,6 +89,14 @@ export class ReferenceItem<T extends any = any> {
             return null;
         }
         return this._item;
+    }
+
+    public async refresh(): Promise<void> {
+
+        this.reset();
+        await this.fulfillItem();
+
+        return;
     }
 
     public async fulfillItem(): Promise<void> {
