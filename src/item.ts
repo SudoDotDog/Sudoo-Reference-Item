@@ -20,6 +20,11 @@ export class ReferenceItem<T extends any = any> {
         this._item = initial;
     }
 
+    public addFulfiller(): this {
+
+        return this;
+    }
+
     public getItemOrDefault(defaultItem: T): T {
 
         if (this._item === EmptyItemSymbol) {
